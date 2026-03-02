@@ -2,38 +2,76 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Ragdoll Playground</title>
+    <title>Gemini System | Ragdoll Playground</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #16181e; }
+        body, html { 
+            margin: 0; 
+            padding: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
+            background-color: #000; 
+        }
         
         #game-container { position: relative; width: 100%; height: 100%; }
-        
-        /* This covers the loading.png watermark */
-        #clean-loader {
+
+        /* Gemini Loading Overlay */
+        #loading-overlay {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #16181e;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             z-index: 100;
-            color: #f8cb00;
-            font-family: Arial, sans-serif;
-            transition: opacity 0.8s ease-out;
+            transition: opacity 0.8s ease-in-out;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
-        .spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid #333;
-            border-top: 5px solid #f8cb00;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
+        /* Pulsing Gemini Header */
+        .gemini-header {
+            font-size: 18px;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            color: #ffffff;
+            margin-bottom: 25px;
+            animation: pulse 2s infinite ease-in-out;
         }
 
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        }
+
+        /* Sleek Progress Wrapper */
+        .progress-wrapper {
+            width: 300px;
+            padding: 4px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            border: 1px solid #333;
+        }
+
+        #custom-progress-bar {
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(90deg, #444, #bbb);
+            box-shadow: 0 0 5px rgba(255,255,255,0.1);
+            transition: width 0.1s linear;
+        }
+
+        .stats-text {
+            margin-top: 20px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            color: #666;
+            letter-spacing: 1px;
+        }
 
         iframe { border: none; width: 100%; height: 100%; }
         .hidden { opacity: 0; pointer-events: none; }
@@ -42,9 +80,12 @@
 <body>
 
 <div id="game-container">
-    <div id="clean-loader">
-        <div class="spinner"></div>
-        <h2>INITIALIZING PHYSICS...</h2>
+    <div id="loading-overlay">
+        <div class="gemini-header">Gemini Processing...</div>
+        <div class="progress-wrapper">
+            <div id="custom-progress-bar"></div>
+        </div>
+        <div id="loading-stats" class="stats-text">ESTABLISHING SECURE CONNECTION...</div>
     </div>
 
     <iframe id="game-frame" 
@@ -55,15 +96,40 @@
 </div>
 
 <script>
-    const loader = document.getElementById('clean-loader');
+    const loader = document.getElementById('loading-overlay');
+    const progressBar = document.getElementById('custom-progress-bar');
+    const statsText = document.getElementById('loading-stats');
     const frame = document.getElementById('game-frame');
 
-    // Wait for the iframe to load, then wait 5 more seconds to hide the AZ logo
+    let progress = 0;
+    const duration = 5000; // 5 seconds to match your original timing
+    const intervalTime = 50; 
+    const increment = (intervalTime / duration) * 100;
+
+    // Simulate progress while the frame loads
+    const progressInterval = setInterval(() => {
+        if (progress < 95) { // Hold at 95% until iframe is officially ready
+            progress += increment;
+            progressBar.style.width = progress + "%";
+            
+            if(progress > 30) statsText.textContent = "INITIALIZING PHYSICS ENGINE...";
+            if(progress > 70) statsText.textContent = "SYNCHRONIZING ENTITIES...";
+        }
+    }, intervalTime);
+
     frame.onload = function() {
+        // Once the frame reports it's loaded, finish the bar and hide overlay
         setTimeout(() => {
-            loader.classList.add('hidden');
-            frame.focus();
-        }, 5000); // Adjust this number if the logo stays longer
+            progress = 100;
+            progressBar.style.width = "100%";
+            statsText.textContent = "SYSTEM READY.";
+            
+            setTimeout(() => {
+                loader.classList.add('hidden');
+                clearInterval(progressInterval);
+                frame.focus();
+            }, 500); // Short delay for user to see "System Ready"
+        }, 5000); // Maintaining your original 5-second delay to cover watermarks
     };
 </script>
 
