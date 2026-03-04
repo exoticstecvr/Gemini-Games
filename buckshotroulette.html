@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Gemini System | Buckshot Roulette</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #0a0a0a;
+            color: #d1d1d1;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.8s ease-in-out;
+        }
+
+        /* Gemini Loading Text */
+        .gemini-header {
+            font-size: 18px;
+            font-weight: 300;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            color: #ffffff;
+            margin-bottom: 25px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
+        }
+
+        /* Sleek Grey Progress Bar */
+        .progress-wrapper {
+            width: 300px;
+            padding: 4px;
+            background: #1a1a1a;
+            border-radius: 2px;
+            border: 1px solid #333;
+        }
+
+        #custom-progress-bar {
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(90deg, #444, #bbb);
+            box-shadow: 0 0 5px rgba(255,255,255,0.1);
+            transition: width 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1);
+        }
+
+        .stats-text {
+            margin-top: 20px;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+            color: #666;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        #unity-container {
+            width: 100%;
+            height: 100%;
+            display: none;
+        }
+
+        iframe {
+            border: none;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+        <div class="gemini-header">Gemini Processing...</div>
+        <div class="progress-wrapper">
+            <div id="custom-progress-bar"></div>
+        </div>
+        <div id="loading-stats" class="stats-text">INITIALIZING QUANTUM CORE... [0%]</div>
+    </div>
+
+    <div id="unity-container">
+        <iframe id="game-frame" src="https://cdn.jsdelivr.net/gh/genizy/web-port@main/buckshot-roulette/" allow="autoplay; fullscreen; gamepad"></iframe>
+    </div>
+
+    <script>
+        const loadingOverlay = document.querySelector("#loading-overlay");
+        const loadingStats = document.querySelector("#loading-stats");
+        const customBar = document.querySelector("#custom-progress-bar");
+        const unityContainer = document.querySelector("#unity-container");
+        
+        let progress = 0;
+        const totalTime = 8000; // 8 seconds to match typical load
+        const intervalTime = 100;
+
+        function startLoading() {
+            const timer = setInterval(() => {
+                progress += (100 / (totalTime / intervalTime));
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(timer);
+                    loadingStats.textContent = "SYNC COMPLETE. STARTING SIMULATION.";
+                    
+                    setTimeout(() => {
+                        loadingOverlay.style.opacity = "0";
+                        setTimeout(() => {
+                            loadingOverlay.style.display = "none";
+                            unityContainer.style.display = "block";
+                        }, 800);
+                    }, 500);
+                } else {
+                    customBar.style.width = progress + "%";
+                    
+                    // Procedural status text
+                    if (progress < 25) loadingStats.textContent = `FETCHING ENGINE DATA... [${Math.round(progress)}%]`;
+                    else if (progress < 50) loadingStats.textContent = `DECRYPTING ASSETS... [${Math.round(progress)}%]`;
+                    else if (progress < 75) loadingStats.textContent = `PRE-RENDERING ENVIRONMENT... [${Math.round(progress)}%]`;
+                    else loadingStats.textContent = `FINALIZING CONNECTION... [${Math.round(progress)}%]`;
+                }
+            }, intervalTime);
+        }
+
+        // Initialize loading on start
+        window.onload = startLoading;
+    </script>
+</body>
+</html>
