@@ -1,38 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-us">
 <head>
     <meta charset="utf-8">
-    <title>Gemini System | Baldis Basics</title>
+    <title>Gemini System | Baldi's Basics</title>
     <style>
-        body, html { 
-            margin: 0; 
-            padding: 0; 
-            width: 100%; 
-            height: 100%; 
-            overflow: hidden; 
-            background-color: #000; 
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: #0a0a0a;
+            color: #fff;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
         }
-        
-        #game-container { position: relative; width: 100%; height: 100%; }
 
-        /* Gemini Loading Overlay */
+        /* --- Gemini Loading Overlay (FNAE Look) --- */
         #loading-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100;
+            z-index: 10000;
             transition: opacity 0.8s ease-in-out;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
-        /* Pulsing Gemini Header */
         .gemini-header {
             font-size: 18px;
             font-weight: 300;
@@ -48,7 +42,6 @@
             50% { opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
         }
 
-        /* Sleek Progress Wrapper */
         .progress-wrapper {
             width: 300px;
             padding: 4px;
@@ -62,8 +55,7 @@
             height: 4px;
             background: linear-gradient(90deg, #444, #bbb);
             box-shadow: 0 0 5px rgba(255,255,255,0.1);
-            /* Linear transition makes the 10-second crawl look smooth */
-            transition: width 0.1s linear;
+            transition: width 0.4s cubic-bezier(0.1, 0.7, 1.0, 0.1);
         }
 
         .stats-text {
@@ -75,71 +67,88 @@
             text-transform: uppercase;
         }
 
-        iframe { border: none; width: 100%; height: 100%; }
-        .hidden { opacity: 0; pointer-events: none; }
+        /* --- Game Interface --- */
+        #game-interface {
+            display: none; 
+            width: 100%;
+            height: 100%;
+        }
+
+        #viewWrap {
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
 
-<div id="game-container">
     <div id="loading-overlay">
         <div class="gemini-header">Gemini Processing...</div>
         <div class="progress-wrapper">
             <div id="custom-progress-bar"></div>
         </div>
-        <div id="loading-stats" class="stats-text">Initializing Systems...</div>
+        <div id="loading-stats" class="stats-text">Initializing Environment... [0%]</div>
     </div>
 
-    <iframe id="game-frame" 
-        src="https://files.silvergames.com/flash/ruffle/player.php?id=267" 
-        allow="autoplay; fullscreen; gamepad" 
-        allowfullscreen="true">
-    </iframe>
-</div>
+    <div id="game-interface">
+        <div id="viewWrap">
+            <iframe 
+                id="gameFrame" 
+                src="https://baldis-basics-online.github.io/file/" 
+                allowfullscreen 
+                sandbox="allow-scripts allow-forms allow-same-origin allow-pointer-lock">
+            </iframe>
+        </div>
+    </div>
 
-<script>
-    const loader = document.getElementById('loading-overlay');
-    const progressBar = document.getElementById('custom-progress-bar');
-    const statsText = document.getElementById('loading-stats');
-    const frame = document.getElementById('game-frame');
+    <script>
+        const overlay = document.getElementById('loading-overlay');
+        const bar = document.getElementById('custom-progress-bar');
+        const stats = document.getElementById('loading-stats');
+        const gameInterface = document.getElementById('game-interface');
 
-    // Configuration for the 10-second load
-    const totalTime = 10000; // 10 seconds
-    const intervalTick = 100; // Update every 100ms
-    let currentTime = 0;
+        let progress = 0;
+        const totalTime = 5000; // 5 seconds
+        const intervalTime = 100;
 
-    function startLoading() {
-        const loadingInterval = setInterval(() => {
-            currentTime += intervalTick;
-            let percent = (currentTime / totalTime) * 100;
-
-            if (percent >= 100) {
-                percent = 100;
-                clearInterval(loadingInterval);
-                statsText.textContent = "System Ready.";
+        function startLoading() {
+            const timer = setInterval(() => {
+                progress += (100 / (totalTime / intervalTime));
                 
-                // Final fade out
-                setTimeout(() => {
-                    loader.classList.add('hidden');
-                    frame.focus();
-                }, 500);
-            } else {
-                progressBar.style.width = percent + "%";
-                
-                // Change status text based on progress
-                if (percent < 30) statsText.textContent = "Fetching Assets...";
-                else if (percent < 60) statsText.textContent = "Processing Game...";
-                else if (percent < 90) statsText.textContent = "Finalizing Environment...";
-                else statsText.textContent = "Authentication Complete...";
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(timer);
+                    stats.textContent = "SYNCHRONIZATION COMPLETE.";
+                    
+                    setTimeout(() => {
+                        overlay.style.opacity = "0";
+                        gameInterface.style.display = "block";
+                        setTimeout(() => {
+                            overlay.style.display = "none";
+                        }, 800);
+                    }, 500);
+                } else {
+                    bar.style.width = progress + "%";
+                    stats.textContent = `FETCHING ASSETS... [${Math.round(progress)}%]`;
+                }
+            }, intervalTime);
+        }
+
+        // Pointer Lock remains so you can play with the mouse correctly
+        document.getElementById('viewWrap').addEventListener('click', function() {
+            if (this.requestPointerLock) {
+                this.requestPointerLock();
             }
-        }, intervalTick);
-    }
+        });
 
-    // Trigger the 10-second sequence once the iframe starts to load
-    frame.onload = function() {
-        startLoading();
-    };
-</script>
-
+        window.onload = startLoading;
+    </script>
 </body>
 </html>
